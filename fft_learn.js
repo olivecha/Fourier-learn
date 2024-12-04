@@ -32,8 +32,17 @@ for (let i = 0; i < shownFreqs.length; i++) {
 let points = []
 // fill the peak points array
 for (let i = 0; i < shownFreqs.length; i++) {
+    // Regulat FFT points
+    if (i % 2 == 0) {
     points.push({x:freq2CanvasPixels(shownFreqs[i]), 
-                 y:amp2CanvasPixels(peakAmplitudes[i])})
+                 y:amp2CanvasPixels(peakAmplitudes[i]),
+                 yDrag:0})
+    }
+    else {
+    points.push({x:freq2CanvasPixels(shownFreqs[i]), 
+                 y:amp2CanvasPixels(0),
+                 yDrag:1})
+    }
 }
 // ----------------------------
 // Variables for the resulting signal
@@ -62,9 +71,12 @@ function signalPeriodAmplitude() {
     for (let i = 0; i < signalPeriodTime.length; i++) {
         let signalPoint = 0;
         for (let j = 0; j < points.length; j++) {
+            let pointAmp = canvasPixel2amp(points[j].y)
+            if (pointAmp > 0.01) {
             let peakFreq = canvasPixel2freq(points[j].x)
             let sinValue = Math.sin(2 * Pi * signalPeriodTime[i] * peakFreq)
-            signalPoint += canvasPixel2amp(points[j].y) * sinValue;
+            signalPoint += pointAmp * sinValue;
+            }
         }
         signal.push(signalPoint)
     }
@@ -112,15 +124,19 @@ function fftFromPeaksPoints(points) {
         fft.push(10 ** fftBackgroundExps[i]);
     }
 
-    let peakWidths = linspace(1.0, 0.5, 8);
+    let peakWidths = linspace(1.0, 0.5, points.length);
     
     // Empty array to store the FFT
     for (let i = 0; i < points.length; i++) {
-        peakId = shownFreqs[i]
-        peakKernel = polyPeakKernel(peakWidths[i])
-        peakIndices = linspace(peakId - 25, peakId + 25, 51)
-        for (let j = 0; j < peakKernel.length; j++) {
-            fft[peakIndices[j]] = fft[peakIndices[j]] + peakKernel[j] * canvasPixel2amp(points[i].y)
+        //peakId = shownFreqs[i]
+        let peakAmp = canvasPixel2amp(points[i].y);
+        if (peakAmp > 0.01) {
+          peakId = Math.ceil(canvasPixel2freq(points[i].x))
+          peakKernel = polyPeakKernel(peakWidths[i])
+          peakIndices = linspace(peakId - 25, peakId + 25, 51)
+          for (let j = 0; j < peakKernel.length; j++) {
+              fft[peakIndices[j]] = fft[peakIndices[j]] + peakKernel[j] * peakAmp
+          }
         }
     }
     return fft
@@ -130,7 +146,6 @@ function polyPeakKernel(width) {
     // Polynomial 1x51 peak kernel
     // width: scaling of the peak width [0; 1]
     x1 = linspace(-1, 0, 25)
-
     exp2 = (5 * (1 - width) + 3 * width)
     let out = [];
     for (let i = 0; i < x1.length; i++) {
@@ -147,8 +162,8 @@ function peaksFromFundamental() {
     // Partial humans can hear
     const fundamental = document.getElementById('fundamental');
     var shownFreqs = [];
-    for (let i = 1; i < 8; i++) {
-        shownFreqs.push(fundamental.value * i);
+    for (let i = 2; i < 15; i++) {
+        shownFreqs.push(fundamental.value * i/2);
     }
     return shownFreqs;
 }
@@ -210,6 +225,7 @@ function linspace(start, stop, samples) {
 
 
 function drawCurve() {
+    // This draws the Fourier transform curve with the peaks
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
 
@@ -250,10 +266,23 @@ function drawCurve2() {
 }
 
 function drawPoints() {
-    ctx.fillStyle = 'red';
     points.forEach(point => {
         ctx.beginPath();
-        ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
+        let peakAmp = canvasPixel2amp(point.y);
+        let pointSize = 7;
+        // Points at the bottom are blue
+        if (peakAmp < 0.01) {
+            ctx.fillStyle = 'blue';
+            pointSize = 4;
+        }
+        // Points that can be dragged are green
+        else if(point.yDrag == 1) {
+            ctx.fillStyle = 'green';
+        }
+        else {
+            ctx.fillStyle = 'red';
+        }
+        ctx.arc(point.x, point.y, pointSize, 0, Math.PI * 2);
         ctx.fill();
     });
 }
@@ -261,6 +290,7 @@ function drawPoints() {
 
 // Function to draw ticks and labels
 function drawTicks() {
+    ctx.beginPath();
     ctx.font = "20px Arial";
     ctx.fillStyle = 'black';
     let boxPadding = 2;
@@ -279,9 +309,13 @@ function drawTicks() {
     // Draw the X ticks
     let canvasBottom = amp2CanvasPixels(ampPad);
     for (let i = 0; i < points.length; i++) {
-        ctx.moveTo(points[i].x, canvasBottom);
-        ctx.lineTo(points[i].x, canvasBottom + 12);
-        ctx.fillText(shownFreqs[i], points[i].x - 15, canvasBottom + 30)
+        let peakAmp = canvasPixel2amp(points[i].y);
+        if (peakAmp > 0.01) {
+          ctx.moveTo(points[i].x, canvasBottom);
+          ctx.lineTo(points[i].x, canvasBottom + 12);
+          let tickLabel = canvasPixel2freq(points[i].x)
+          ctx.fillText(Math.ceil(tickLabel), points[i].x - 15, canvasBottom + 30)
+        }
     }
     ctx.fillText("Fréquence (Hz)", canvas.width / 2 - 20, canvas.height - 5)
 
@@ -333,7 +367,6 @@ function drawTicks2() {
             ctx2.fillText(tickLabel.toFixed(1), tickXPos - 10, tickYPos + 30)
         }
     }
-
     ctx2.stroke();
 
     // Write Amplitude
@@ -356,7 +389,9 @@ canvas.addEventListener('mousedown', (event) => {
 canvas.addEventListener('mousemove', (event) => {
     if (draggingPoint) {
         const mousePos = getMousePos(canvas, event);
-        // draggingPoint.x = mousePos.x;
+        if (draggingPoint.yDrag == 1) {
+            draggingPoint.x = mousePos.x;
+        }
         draggingPoint.y = Math.min(mousePos.y, amp2CanvasPixels(0));
         draggingPoint.y = Math.max(draggingPoint.y, amp2CanvasPixels(ampMax - 0.1));
         drawCurve();
