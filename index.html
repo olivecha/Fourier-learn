@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apprendre Fourier</title>
+    <style>
+        body {
+            font: 20px Arial;
+        }
+        canvas {
+            border: 1px solid black;
+        }
+        div {
+        }
+        .componentUiContainer{
+            display: flex;
+            justify-content: left;
+            align-items: center;
+            padding: 10px;
+            padding-left 20px;
+            overflow: hidden;
+        }
+        .mainUiContainer {
+            float: none;
+        }
+        .mainPlotContainer {
+            display: flex;
+            justify-content: space-evenly;
+        }
+        @media(max-width:1400px)
+        {
+          .mainPlotContainer
+          {
+            flex-direction:column;
+            align-items:flex-start;
+          }
+        }
+        .plotContainer {
+            display: flex;
+            flex-direction: column;
+        }
+        audio {
+            float: left;
+            padding-left: 15px;
+        }
+        input {
+            font: 20px Arial;
+        }
+        label {
+            padding-right: 15px;
+
+        }
+    </style>
+</head>
+<body>
+    <!--* Div for the user controls -->
+    <div class="mainUiContainer" id="controls">
+      <div class="componentUiContainer">
+        <label for="fundamental">Fondamentale (Hz) : </label>
+        <input type="number" id="fundamental" value="110" min="80" max="330">
+      </div>
+      <div class="componentUiContainer" id="listenContainer">
+          <p> Écouter le son :</p>
+      </div>
+    <!--* fft and signal canvas-->
+    <div class="mainPlotContainer">
+      <div class="plotContainer">
+        <canvas id="canvas" width="700" height="400"></canvas>
+      </div>
+      <div class="plotContainer">
+        <canvas id="canvas2" width="700" height="400"></canvas>
+      </div>
+    </div>
+    <script src="fft_learn.js"></script>
+</body>
+</html>
