@@ -131,7 +131,7 @@ function fftFromPeaksPoints(points) {
         //peakId = shownFreqs[i]
         let peakAmp = canvasPixel2amp(points[i].y);
         if (peakAmp > 0.01) {
-          peakId = Math.ceil(canvasPixel2freq(points[i].x))
+          peakId = Math.floor(canvasPixel2freq(points[i].x)) + 1
           peakKernel = polyPeakKernel(peakWidths[i])
           peakIndices = linspace(peakId - 25, peakId + 25, 51)
           for (let j = 0; j < peakKernel.length; j++) {
@@ -168,9 +168,10 @@ function peaksFromFundamental() {
     return shownFreqs;
 }
 
+
 // Transfor functions for the two axes of the Fourier plot
 function freq2CanvasPixels(freq) {
-    return (canvas.width * (freq / freqMax + freqPad / freqMax)) | 0
+    return canvas.width * (freq / freqMax + freqPad / freqMax)
 }
 function canvasPixel2freq(px) {
     return (px / canvas.width - freqPad / freqMax) * freqMax
@@ -314,7 +315,7 @@ function drawTicks() {
           ctx.moveTo(points[i].x, canvasBottom);
           ctx.lineTo(points[i].x, canvasBottom + 12);
           let tickLabel = canvasPixel2freq(points[i].x)
-          ctx.fillText(Math.ceil(tickLabel), points[i].x - 15, canvasBottom + 30)
+          ctx.fillText(Math.round(tickLabel), points[i].x - 15, canvasBottom + 30)
         }
     }
     ctx.fillText("Fréquence (Hz)", canvas.width / 2 - 20, canvas.height - 5)
@@ -407,6 +408,32 @@ canvas.addEventListener('mouseup', () => {
 canvas.addEventListener('mouseleave', () => {
     draggingPoint = null;
 });
+
+document.getElementById('fundamental').addEventListener('change', function () {
+    shownFreqs = peaksFromFundamental();
+    freqMax = shownFreqs[shownFreqs.length - 1] + shownFreqs[0]
+    freqPad = 0.06 * freqMax
+    for (let i = 0; i < shownFreqs.length; i++) {
+      if (i % 2 == 0) {
+        points[i] = {x:freq2CanvasPixels(shownFreqs[i]), 
+                     y:points[i].y,
+                     yDrag:0}
+      }
+      else {
+        points[i] = {x:freq2CanvasPixels(shownFreqs[i]), 
+                     y:points[i].y,
+                     yDrag:1}
+      }
+    }
+    timePeriod = 2 / shownFreqs[0];
+    timeMin = -1 * 2 * (timePeriod / 20);
+    timeMax = timePeriod + timePeriod/30; // Time for two periods
+    // Two periods signal time array
+    signalPeriodTime = linspace(0, timePeriod + timePeriod/500, (timePeriod * sampleRate) | 0)
+    drawCurve();
+    drawCurve2();
+    updateAudio();
+    });
 
 function getMousePos(canvas, event) {
     const rect = canvas.getBoundingClientRect();
