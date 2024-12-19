@@ -378,18 +378,29 @@ function drawTicks2() {
     ctx2.restore();
 }
 
-canvas.addEventListener('mousedown', (event) => {
-    const mousePos = getMousePos(canvas, event);
-    points.forEach(point => {
-        if (isPointInside(mousePos, point)) {
-            draggingPoint = point;
-        }
-    });
-});
-
 const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
+// Case for Mobile (touch device)
 if (isTouchDevice) {
+  // Event when the touch ends
+  canvas.addEventListener('touchend', () => {
+      draggingPoint = null;
+      updateAudio();
+  });
+  // Assuming touch cancel equals mouse leave
+  canvas.addEventListener('touchcancel', () => {
+      draggingPoint = null;
+  });
+  // Event when the touch starts
+  canvas.addEventListener('touchstart', (event) => {
+      const mousePos = getTouchPos(canvas, event);
+      points.forEach(point => {
+          if (isPointInside(mousePos, point)) {
+              draggingPoint = point;
+          }
+      });
+  });
+  // Event when the touching moves
   document.addEventListener("touchmove", (event) => {
       event.preventDefault();
       if (draggingPoint) {
@@ -403,7 +414,28 @@ if (isTouchDevice) {
           drawCurve2();
       }
   });
-} else {
+} // End if isTouchDevice
+// Case for Desktop with mouse
+else {
+  // Event when the click ends
+  canvas.addEventListener('mouseup', () => {
+      draggingPoint = null;
+      updateAudio();
+  });
+  // Event when the mouse leaves the canvas
+  canvas.addEventListener('mouseleave', () => {
+      draggingPoint = null;
+  });
+  // Event when the mouse gets clicked
+  canvas.addEventListener('mousedown', (event) => {
+      const mousePos = getMousePos(canvas, event);
+      points.forEach(point => {
+          if (isPointInside(mousePos, point)) {
+              draggingPoint = point;
+          }
+      });
+  });
+  // Event when the mouse moves
   canvas.addEventListener('mousemove', (event) => {
       if (draggingPoint) {
           const mousePos = getMousePos(canvas, event);
@@ -416,16 +448,8 @@ if (isTouchDevice) {
           drawCurve2();
       }
   });
-}
+} // End else
 
-canvas.addEventListener('mouseup', () => {
-    draggingPoint = null;
-    updateAudio();
-});
-
-canvas.addEventListener('mouseleave', () => {
-    draggingPoint = null;
-});
 
 document.getElementById('fundamental').addEventListener('change', function () {
     shownFreqs = peaksFromFundamental();
