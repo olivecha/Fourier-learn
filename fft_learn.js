@@ -395,8 +395,9 @@ if (isTouchDevice) {
   });
   // Event when the touch starts
   canvas.addEventListener('touchstart', (event) => {
-      console.log('Number of touches:', event.touches.length)
+      if (event.touches.length == 1) {
       event.preventDefault();
+      }
       const mousePos = getTouchPos(canvas, event);
       points.forEach(point => {
           if (isPointInsideTouch(mousePos, point)) {
@@ -406,7 +407,9 @@ if (isTouchDevice) {
   });
   // Event when the touching moves
   document.addEventListener("touchmove", (event) => {
+      if (event.touches.length == 1) {
       event.preventDefault();
+      }
       if (draggingPoint) {
           const mousePos = getTouchPos(canvas, event);
           if (draggingPoint.yDrag == 1) {
