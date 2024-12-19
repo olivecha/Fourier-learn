@@ -401,7 +401,7 @@ if (isTouchDevice) {
       event.preventDefault();
       const mousePos = getTouchPos(canvas, event);
       points.forEach(point => {
-          if (isPointInside(mousePos, point)) {
+          if (isPointInsideTouch(mousePos, point)) {
               draggingPoint = point;
           }
       });
@@ -505,6 +505,13 @@ function isPointInside(mousePos, point) {
     const dx = mousePos.x - point.x;
     const dy = mousePos.y - point.y;
     return Math.sqrt(dx * dx + dy * dy) < 8; // Radius of the point
+}
+
+// Allow larger tolerance for touch events
+function isPointInsideTouch(mousePos, point) {
+    const dx = mousePos.x - point.x;
+    const dy = mousePos.y - point.y;
+    return Math.sqrt(dx * dx + dy * dy) < 16; // Radius of the point
 }
 
 function getSampleAt(t)
