@@ -494,7 +494,7 @@ function getMousePos(canvas, event) {
 
 function getTouchPos(canvas, event) {
     const rect = canvas.getBoundingClientRect();
-    const touch = envent.touches[0];
+    const touch = event.touches[0];
     return {
         x: touch.clientX - rect.left,
         y: touch.clientY - rect.top
