@@ -391,6 +391,7 @@ const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 if (isTouchDevice) {
   document.addEventListener("touchmove", (event) => {
+      event.preventDefault();
       if (draggingPoint) {
           const mousePos = getTouchPos(canvas, event);
           if (draggingPoint.yDrag == 1) {
