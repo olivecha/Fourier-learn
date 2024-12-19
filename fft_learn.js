@@ -387,18 +387,35 @@ canvas.addEventListener('mousedown', (event) => {
     });
 });
 
-canvas.addEventListener('mousemove', (event) => {
-    if (draggingPoint) {
-        const mousePos = getMousePos(canvas, event);
-        if (draggingPoint.yDrag == 1) {
-            draggingPoint.x = mousePos.x;
-        }
-        draggingPoint.y = Math.min(mousePos.y, amp2CanvasPixels(0));
-        draggingPoint.y = Math.max(draggingPoint.y, amp2CanvasPixels(ampMax - 0.1));
-        drawCurve();
-        drawCurve2();
-    }
-});
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+if (isTouchDevice) {
+  document.addEventListener("touchmove", (event) => {
+      if (draggingPoint) {
+          const mousePos = getTouchPos(canvas, event);
+          if (draggingPoint.yDrag == 1) {
+              draggingPoint.x = mousePos.x;
+          }
+          draggingPoint.y = Math.min(mousePos.y, amp2CanvasPixels(0));
+          draggingPoint.y = Math.max(draggingPoint.y, amp2CanvasPixels(ampMax - 0.1));
+          drawCurve();
+          drawCurve2();
+      }
+  });
+} else {
+  canvas.addEventListener('mousemove', (event) => {
+      if (draggingPoint) {
+          const mousePos = getMousePos(canvas, event);
+          if (draggingPoint.yDrag == 1) {
+              draggingPoint.x = mousePos.x;
+          }
+          draggingPoint.y = Math.min(mousePos.y, amp2CanvasPixels(0));
+          draggingPoint.y = Math.max(draggingPoint.y, amp2CanvasPixels(ampMax - 0.1));
+          drawCurve();
+          drawCurve2();
+      }
+  });
+}
 
 canvas.addEventListener('mouseup', () => {
     draggingPoint = null;
@@ -440,6 +457,15 @@ function getMousePos(canvas, event) {
     return {
         x: event.clientX - rect.left,
         y: event.clientY - rect.top
+    };
+}
+
+function getTouchPos(canvas, event) {
+    const rect = canvas.getBoundingClientRect();
+    const touch = envent.touches[0];
+    return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
     };
 }
 
