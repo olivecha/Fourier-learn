@@ -511,7 +511,7 @@ function isPointInside(mousePos, point) {
 function isPointInsideTouch(mousePos, point) {
     const dx = mousePos.x - point.x;
     const dy = mousePos.y - point.y;
-    return Math.sqrt(dx * dx + dy * dy) < 16; // Radius of the point
+    return Math.sqrt(dx * dx + dy * dy) < 32; // Radius of the point
 }
 
 function getSampleAt(t)
