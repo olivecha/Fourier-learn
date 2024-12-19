@@ -386,18 +386,16 @@ console.log('Device is touch device:', isTouchDevice)
 if (isTouchDevice) {
   // Event when the touch ends
   canvas.addEventListener('touchend', () => {
-      console.log('Touch ended')
       draggingPoint = null;
       updateAudio();
   });
   // Assuming touch cancel equals mouse leave
   canvas.addEventListener('touchcancel', () => {
-      console.log('Touch cancelled')
       draggingPoint = null;
   });
   // Event when the touch starts
   canvas.addEventListener('touchstart', (event) => {
-      console.log('Touch started')
+      console.log('Number of touches:', event.touches.length)
       event.preventDefault();
       const mousePos = getTouchPos(canvas, event);
       points.forEach(point => {
@@ -408,7 +406,6 @@ if (isTouchDevice) {
   });
   // Event when the touching moves
   document.addEventListener("touchmove", (event) => {
-      console.log('Touch moving')
       event.preventDefault();
       if (draggingPoint) {
           const mousePos = getTouchPos(canvas, event);
