@@ -380,6 +380,8 @@ function drawTicks2() {
 
 const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
+console.log('Device is touch device:', isTouchDevice)
+
 // Case for Mobile (touch device)
 if (isTouchDevice) {
   // Event when the touch ends
