@@ -393,6 +393,7 @@ if (isTouchDevice) {
   });
   // Event when the touch starts
   canvas.addEventListener('touchstart', (event) => {
+      event.preventDefault();
       const mousePos = getTouchPos(canvas, event);
       points.forEach(point => {
           if (isPointInside(mousePos, point)) {
