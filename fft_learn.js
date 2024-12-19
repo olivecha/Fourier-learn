@@ -396,6 +396,7 @@ if (isTouchDevice) {
   // Event when the touch starts
   canvas.addEventListener('touchstart', (event) => {
       if (event.touches.length == 1) {
+      console.log('Disabling scrolling');
       event.preventDefault();
       }
       const mousePos = getTouchPos(canvas, event);
@@ -408,6 +409,7 @@ if (isTouchDevice) {
   // Event when the touching moves
   document.addEventListener("touchmove", (event) => {
       if (event.touches.length == 1) {
+      console.log('Disabling scrolling')
       event.preventDefault();
       }
       if (draggingPoint) {
