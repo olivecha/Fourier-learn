@@ -4,6 +4,15 @@ const canvas2 = document.getElementById('canvas2');
 const ctx2 = canvas2.getContext('2d');
 
 // ----------------------------
+// Style variables accessed from the stylesheet
+// ----------------------------
+var style = window.getComputedStyle(document.body)
+var lineColour = style.getPropertyValue('--plot-line-color');
+var backgroundColour = style.getPropertyValue('--backgroud-color');
+var annotationColour = style.getPropertyValue('--annotation-color');
+var majorPointColour = style.getPropertyValue('--major-point-color');
+var minorPointColour = style.getPropertyValue('--minor-point-color');
+// ----------------------------
 // Variables for the draggable fft canvas
 // ----------------------------
 // Point being dragged
@@ -228,6 +237,11 @@ function linspace(start, stop, samples) {
 function drawCurve() {
     // This draws the Fourier transform curve with the peaks
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.beginPath();
+    ctx.fillStyle = backgroundColour;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     ctx.beginPath();
 
     freqValues = frequenciesFromPeaksPoints(points)
@@ -238,7 +252,7 @@ function drawCurve() {
     for (let i = 1; i < freqValues.length; i++) {
         ctx.lineTo(freq2CanvasPixels(freqValues[i]), amp2CanvasPixels(fftValues[i]));
     }
-    ctx.strokeStyle = 'blue';
+    ctx.strokeStyle = lineColour;
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -248,6 +262,11 @@ function drawCurve() {
 
 function drawCurve2() {
     ctx2.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx2.beginPath();
+    ctx2.fillStyle = backgroundColour;
+    ctx2.fillRect(0, 0, canvas.width, canvas.height);
+
     ctx2.beginPath();
 
     signalAmpValues = signalPeriodAmplitude()
@@ -259,7 +278,7 @@ function drawCurve2() {
         ctx2.lineTo(signalPeriodTime2Canvas(signalPeriodTime[i]), 
                     signalPeriodAmplitude2Canvas(signalAmpValues[i]));
     }
-    ctx2.strokeStyle = 'blue';
+    ctx2.strokeStyle = lineColour;
     ctx2.lineWidth = 2;
     ctx2.stroke();
 
@@ -271,21 +290,29 @@ function drawPoints() {
         ctx.beginPath();
         let peakAmp = canvasPixel2amp(point.y);
         let pointSize = 7;
-        // Points at the bottom are blue
+        // Points at the bottom are same colour as line
         if (peakAmp < 0.01) {
-            ctx.fillStyle = 'blue';
+            ctx.fillStyle = lineColour;
             pointSize = 4;
         }
         // Points that can be dragged are green
         else if(point.yDrag == 1) {
-            ctx.fillStyle = 'green';
+            ctx.fillStyle = minorPointColour;
         }
         else {
-            ctx.fillStyle = 'red';
+            ctx.fillStyle = majorPointColour;
         }
         ctx.arc(point.x, point.y, pointSize, 0, Math.PI * 2);
         ctx.fill();
     });
+}
+
+function fillCanvasBackgrounds() {
+
+
+    ctx2.beginPath();
+    ctx2.fillStyle = backgroundColour;
+    ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
 }
 
 
@@ -293,7 +320,7 @@ function drawPoints() {
 function drawTicks() {
     ctx.beginPath();
     ctx.font = "20px Arial";
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = annotationColour;
     let boxPadding = 2;
     let boxLeft = canvas.width * (freqPad / freqMax);
 
@@ -303,7 +330,7 @@ function drawTicks() {
     ctx.lineTo(canvas.width, amp2CanvasPixels(ampPad)) // Right bottom
     // ctx.lineTo(canvas.width - boxPadding, boxPadding) // Right top
     // ctx.lineTo(boxLeft, boxPadding) // Right top
-    ctx.strokeStyle = 'black';
+    ctx.strokeStyle = annotationColour;    
     ctx.lineWidth = 2;
     ctx.stroke();
     
@@ -324,7 +351,7 @@ function drawTicks() {
     ctx.moveTo(boxLeft, amp2CanvasPixels(ampPad))
     ctx.lineTo(boxLeft, amp2CanvasPixels(ampPad + 0.1) - 20)
 
-    ctx.strokeStyle = 'black';
+    ctx.strokeStyle = annotationColour;    
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -340,8 +367,8 @@ function drawTicks2() {
     // Font and tick style
     ctx2.beginPath();
     ctx2.font = "20px Arial";
-    ctx2.fillStyle = 'black';
-    ctx2.strokeStyle = 'black';
+    ctx2.fillStyle = annotationColour;
+    ctx2.strokeStyle = annotationColour;
     ctx2.lineWidth = 2.5;
     let boxPadding = 5;
     let boxLeft = signalPeriodTime2Canvas(-timePeriod/200);
@@ -419,6 +446,7 @@ if (isTouchDevice) {
           }
           draggingPoint.y = Math.min(mousePos.y, amp2CanvasPixels(0));
           draggingPoint.y = Math.max(draggingPoint.y, amp2CanvasPixels(ampMax - 0.1));
+          fillCanvasBackgrounds();
           drawCurve();
           drawCurve2();
       }

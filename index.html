@@ -5,11 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Apprendre Fourier</title>
     <style>
+        :root {
+            --plot-line-color: #f9b524;
+            --backgroud-color: #4d4c49;
+            --annotation-color: #e1dcd2;
+            --major-point-color: #f38c30;
+            --minor-point-color: #f34638;
+        }
         body {
             font: 20px Arial;
+            color: var(--annotation-color);
+            background-color: var(--backgroud-color);
         }
         canvas {
-            border: 1px solid black;
+            border: 0.25px solid var(--annotation-color);
         }
         div {
         }
