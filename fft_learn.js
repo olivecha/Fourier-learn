@@ -31,12 +31,23 @@ let peakExponents = linspace(0, -1.75, shownFreqs.length)
 let ampMin = -0.30;
 let ampMax = 1.3;
 let ampPad = -0.02 * (ampMax - ampMin)
-// Canvas time display range
 // amplitudes of the peaks
 let peakAmplitudes = [];
+// amplitudes of the peaks from a real sound (A5)
+let experimentalPeakAmplitudes = [1.0, 0.74214521, 0.21227197, 0.09195222, 0.14772541,
+                                  0.08142404, 0.02796886, 0.02547928, 0.00883545, 
+                                  0.03559971, 0.0081032 , 0.01230223, 0.00616769, 
+                                  0.00257488, 0.02301954, 0.00255435, 0.00143624]
+
+// Convert to log scale at the start
+let peakAmplitudeLogScaling = Math.log(experimentalPeakAmplitudes[shownFreqs.length])
+
 for (let i = 0; i < shownFreqs.length; i++) {
-    peakAmplitudes.push(10 ** peakExponents[i])
+    if (i < experimentalPeakAmplitudes.length) {
+      peakAmplitudes.push((Math.log(experimentalPeakAmplitudes[i]) - peakAmplitudeLogScaling) / -peakAmplitudeLogScaling)
+    }
 }
+
 // actual displayed points for the cavas
 let points = []
 // fill the peak points array
@@ -82,9 +93,10 @@ function signalPeriodAmplitude() {
         for (let j = 0; j < points.length; j++) {
             let pointAmp = canvasPixel2amp(points[j].y)
             if (pointAmp > 0.01) {
-            let peakFreq = canvasPixel2freq(points[j].x)
-            let sinValue = Math.sin(2 * Pi * signalPeriodTime[i] * peakFreq)
-            signalPoint += pointAmp * sinValue;
+              // pointAmp = Math.exp((pointAmp * -peakAmplitudeLogScaling) + peakAmplitudeLogScaling)
+              let peakFreq = canvasPixel2freq(points[j].x)
+              let sinValue = Math.sin(2 * Pi * signalPeriodTime[i] * peakFreq)
+              signalPoint += pointAmp * sinValue;
             }
         }
         signal.push(signalPoint)
@@ -185,11 +197,13 @@ function freq2CanvasPixels(freq) {
 function canvasPixel2freq(px) {
     return (px / canvas.width - freqPad / freqMax) * freqMax
 }
+
 function amp2CanvasPixels(amp) {
     return canvas.height - canvas.height * (amp - ampMin) / (ampMax - ampMin)
 }
 function canvasPixel2amp(py) {
-    return ((py - canvas.height) / (-1 * canvas.height)) * (ampMax - ampMin) + ampMin
+    let amp = ((py - canvas.height) / (-1 * canvas.height)) * (ampMax - ampMin) + ampMin
+    return amp
 }
 
 function arrayAbs(array) {
@@ -308,8 +322,6 @@ function drawPoints() {
 }
 
 function fillCanvasBackgrounds() {
-
-
     ctx2.beginPath();
     ctx2.fillStyle = backgroundColour;
     ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
@@ -488,6 +500,7 @@ else {
 } // End else
 
 
+// Function to update everything when the fundamental changes
 document.getElementById('fundamental').addEventListener('change', function () {
     shownFreqs = peaksFromFundamental();
     freqMax = shownFreqs[shownFreqs.length - 1] + shownFreqs[0]
@@ -551,8 +564,9 @@ function getSampleAt(t)
     let signalValue = 0.
     for (let i = 0; i < points.length; i ++) {
         let An = canvasPixel2amp(points[i].y);
+        // An = Math.exp((An * -0.1 * peakAmplitudeLogScaling) + 0.1 * peakAmplitudeLogScaling)
         let freq = canvasPixel2freq(points[i].x);
-        let decay = Math.exp(-(i + 1)/2 * t);
+        let decay = Math.exp(-(i/3 + 1)/2 * t);
         let signalHarmonic = An * Math.sin(2 * PI * t * freq) * decay;
         signalValue += signalHarmonic;
     }
@@ -560,7 +574,7 @@ function getSampleAt(t)
 }
 
 function fadeOut(signal, SPS) {
-    let fadeOutTime = 1.0;
+    let fadeOutTime = 0.5;
     let fadeOutSamples = fadeOutTime * SPS;
     let fadeOutArray = linspace(1.0, 0., fadeOutSamples)
     for (let i = 0; i < fadeOutArray.length; i++) {
