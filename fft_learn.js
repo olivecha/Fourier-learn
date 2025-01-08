@@ -33,14 +33,11 @@ let ampMax = 1.3;
 let ampPad = -0.02 * (ampMax - ampMin)
 // amplitudes of the peaks
 let peakAmplitudes = [];
-// amplitudes of the peaks from a real sound (A5)
-let experimentalPeakAmplitudes = [1.0, 0.74214521, 0.21227197, 0.09195222, 0.14772541,
-                                  0.08142404, 0.02796886, 0.02547928, 0.00883545, 
-                                  0.03559971, 0.0081032 , 0.01230223, 0.00616769, 
-                                  0.00257488, 0.02301954, 0.00255435, 0.00143624]
+
 
 // Convert to log scale at the start
-let peakAmplitudeLogScaling = Math.log(experimentalPeakAmplitudes[shownFreqs.length])
+let experimentalPeakAmplitudes = peaksAmpsFromFundamental()
+let peakAmplitudeLogScaling = Math.log(arrayMin(experimentalPeakAmplitudes.slice(0,9)))
 
 for (let i = 0; i < shownFreqs.length; i++) {
     if (i < experimentalPeakAmplitudes.length) {
@@ -55,7 +52,7 @@ for (let i = 0; i < shownFreqs.length; i++) {
     // Regulat FFT points
     if (i % 2 == 0) {
     points.push({x:freq2CanvasPixels(shownFreqs[i]), 
-                 y:amp2CanvasPixels(peakAmplitudes[i]),
+                 y:amp2CanvasPixels(peakAmplitudes[Math.floor(i/2)]),
                  yDrag:0})
     }
     else {
@@ -176,6 +173,49 @@ function polyPeakKernel(width) {
         out.push((x1[i] + 1) ** (2 ** exp2))
     }
     return out
+}
+
+function peaksAmpsFromFundamental() {
+    // Get some experimental peak amplitudes from the user defined fundamental
+    let experimentalPeakFreqsFundamentals = [82, 110, 146, 196, 328]
+    // amplitudes of the peaks from a real sound (E2)
+    let experimentalPeakAmplitudes82Hz =  [0.87222151, 1.0, 0.26613255, 0.24458187, 0.05386535,
+                                           0.03874339, 0.01633243, 0.04685895, 0.01206461, 0.01397203]
+    // amplitudes of the peaks from a real sound (A2)
+    let experimentalPeakAmplitudes110Hz = [1.0, 0.74214521, 0.21227197, 0.09195222, 0.14772541,
+                                           0.08142404, 0.02796886, 0.02547928, 0.00883545, 0.03559971]
+    // amplitudes of the peaks from a real sound (D3)
+    let experimentalPeakAmplitudes146Hz = [1.00000000e+00, 4.47225650e-01, 2.14790727e-01, 3.18458820e-02,
+                                           1.29347581e-02, 2.51348501e-02, 1.78332130e-02, 2.29183680e-02,
+                                           3.90459506e-03, 7.10127414e-04]
+    // amplitudes of the peaks from a real sound (G3)
+    let experimentalPeakAmplitudes196Hz = [1.0, 0.12325866, 0.09305026, 0.08022753, 0.0294975 ,
+                                           0.03708471, 0.0277063 , 0.00695532, 0.00591834, 0.0191853 ]
+    // amplitudes of the peaks from a real sound (B4)
+    let experimentalPeakAmplitudes246Hz = [1.0, 0.40557445, 0.1998758, 0.02351546, 0.00564378,
+                                           0.00471402, 0.01401029, 0.07721915, 0.03721915]
+    // amplitudes of the peaks from a real sound (E5)
+    let experimentalPeakAmplitudes328Hz = [1., 0.23243072, 0.03318285, 0.01011001, 0.01056265, 0.02165178, 
+                                           0.00564378, 0.00471402, 0.00471402]
+    let experimentalPeakAmplitudesArray = [experimentalPeakAmplitudes82Hz,
+                                           experimentalPeakAmplitudes110Hz,
+                                           experimentalPeakAmplitudes146Hz, 
+                                           experimentalPeakAmplitudes196Hz,
+                                           // experimentalPeakAmplitudes246Hz, 
+                                           experimentalPeakAmplitudes328Hz]
+    const fundamental = document.getElementById('fundamental');
+    // Argmin of the diff
+    let absFundamentalDiff = 1e6;
+    let currDiff = 0;
+    let matchId = -1;
+    for (let i=0; i < experimentalPeakFreqsFundamentals.length; i++) {
+        currDiff = Math.abs(fundamental.value - experimentalPeakFreqsFundamentals[i])
+        if (currDiff < absFundamentalDiff) {
+            matchId = i;
+            absFundamentalDiff = currDiff;
+        }
+    }
+    return experimentalPeakAmplitudesArray[matchId]
 }
 
 
@@ -502,13 +542,23 @@ else {
 
 // Function to update everything when the fundamental changes
 document.getElementById('fundamental').addEventListener('change', function () {
+
+    // Convert to log scale at the start
+    experimentalPeakAmplitudes = peaksAmpsFromFundamental()
+    peakAmplitudeLogScaling = Math.log(arrayMin(experimentalPeakAmplitudes.slice(0,9)))
+    peakAmplitudes = []
+    for (let i = 0; i < shownFreqs.length; i++) {
+        if (i < experimentalPeakAmplitudes.length) {
+          peakAmplitudes.push((Math.log(experimentalPeakAmplitudes[i]) - peakAmplitudeLogScaling) / -peakAmplitudeLogScaling)
+        }
+    }
     shownFreqs = peaksFromFundamental();
     freqMax = shownFreqs[shownFreqs.length - 1] + shownFreqs[0]
     freqPad = 0.06 * freqMax
     for (let i = 0; i < shownFreqs.length; i++) {
       if (i % 2 == 0) {
         points[i] = {x:freq2CanvasPixels(shownFreqs[i]), 
-                     y:points[i].y,
+                     y:amp2CanvasPixels(peakAmplitudes[Math.floor(i/2)]),
                      yDrag:0}
       }
       else {
