@@ -9,6 +9,7 @@
             --plot-line-color: #f9b524;
             --backgroud-color: #4d4c49;
             --annotation-color: #e1dcd2;
+            --annotation-color-dark: #999590;
             --major-point-color: #f38c30;
             --minor-point-color: #586c36;
         }
@@ -21,6 +22,11 @@
             border: 0.0px solid var(--annotation-color);
         }
         div {
+        }
+        .headerContainer{
+            display: flex;
+            justify-content: flex-start;
+            /* border: 1px solid blue; */
         }
         .componentUiContainer{
             display: flex;
@@ -39,11 +45,11 @@
         }
         @media(max-width:1400px)
         {
-          .mainPlotContainer
-          {
-            flex-direction:column;
-            align-items:flex-start;
-          }
+        .mainPlotContainer
+        {
+          flex-direction:column;
+          align-items:flex-start;
+        }
         }
         .plotContainer {
             display: flex;
@@ -60,14 +66,45 @@
             padding-right: 15px;
 
         }
+        h1 {
+            margin: 0;
+            padding: 30px;
+            /* border: 1px solid black; */
+            align-self: flex-start;
+            font-weight: normal;
+        }
+        h4 {
+            margin: 0;
+            padding-top: 10px;
+            color: var(--annotation-color-dark);
+        }
+        li {
+            padding: 5px;
+            color: var(--annotation-color-dark);
+        }
+        hr {
+            margin: 0;
+            border: none;
+            border-bottom: 2px solid;
+            padding-top: 80px;
+        }
+
+        p {
+        }
+        .limitationsText {
+            color: var(--annotation-color-dark);
+        }
     </style>
 </head>
 <body>
-    <a href="https://bruand.com/">
-    <img src="https://bruand.com/cdn/shop/files/Bruand_logo_9b9e5c1c-22c0-4887-b0fa-89eaa4fa608b_410x.png?v=1613503579"
-         alt="Logo Bruand"
-         style="width:200px;">
-    </a>
+    <div class="headerContainer">
+      <a href="https://bruand.com/">
+      <img src="https://bruand.com/cdn/shop/files/Bruand_logo_9b9e5c1c-22c0-4887-b0fa-89eaa4fa608b_410x.png?v=1613503579"
+           alt="Logo Bruand"
+           style="width:200px;">
+      </a>
+      <h1> Transformée de Fourier Interactive </h1>
+    </div>
     <!--* Div for the user controls -->
     <div class="mainUiContainer" id="controls">
       <div class="componentUiContainer">
@@ -77,6 +114,7 @@
       <div class="componentUiContainer" id="listenContainer">
           <p> Écouter le son :</p>
       </div>
+    </div>
     <!--* fft and signal canvas-->
     <div class="mainPlotContainer">
       <div class="plotContainer">
@@ -86,6 +124,44 @@
         <canvas id="canvas2" width="700" height="400"></canvas>
       </div>
     </div>
+    <hr />
+    
+    <h4> Fonctionnement </h4>
+
+    <ul>
+      <li> 
+        La fréquence fondamentale du son peut être modifiée. Une fondamentale plus 
+        élevée produira un son plus aigu et vice-versa. La fondamentale dicte aussi
+        la distance entre le pics, donc moins de fréquences partielles (harmoniques)
+        seron audibles pour un son ayant une fondamentale plus élevée.
+      </li>
+      <li> 
+        L'amplitude des points orange foncées sur les pics de la transformée de Fourier
+        peut être changée afin de visualiser comment la courbe du signal est modifiée.
+        Le son produit par le signal est aussi mis à jour après chaque changement 
+        d'amplitude d'un pic. Par exemple mettre la fondamentale à zéro rendra le son
+        beaucoup plus aigu.
+      </li>
+      <li> 
+        Les points de la même couleur que la courbe peuvent être déplacés afin d'ajouter
+        une fréquence partielle au son. Lorsque la couleur du point passe au vert, cela
+        veut dire qu'il est pris en compte par l'application pour le tracé de la courbe
+        du signal et le son produit. Ces points peuvent aussi être déplacés de gauche à
+        droite afin d'ajouter une fréquence arbitraire. 
+      </li>
+    </ul>
+
+    <h4> Limitations </h4>
+    <p class='limitationsText'>
+    Cette application est un outil pédagogique permettant de visualiser la
+    relation entre un signal dans le temps (gauche) et sa transformée de
+    Fourier (droite) qui indique la puissance du signal a chaque fréquence.
+    Les valeurs des deux graphiques sont altérées comparativement au vrai
+    signal et à la vraie transformée de Fourrier d'un son de guitare afin de
+    permettre de mieux visualiser comment des changements d'amplitude dans la
+    transformée de Fourier affectent la courbe et le son du signal. Il s'agit
+    donc d'analyse qualitatives. 
+    </p>
     <script src="fft_learn.js"></script>
 </body>
 </html>
